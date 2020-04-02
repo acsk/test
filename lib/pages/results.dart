@@ -22,26 +22,23 @@ class Result extends StatelessWidget {
         title: Text('Resultado do Rastreamento'),
         backgroundColor: Colors.lightGreen,
       ),
-      body: Center(
-          child: FutureBuilder(
-        future: fetchTracking(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final data_header = snapshot.data;
-            return Container(
-                child: Text(snapshot.data,
-              style: TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
-            ));
-          } else if (snapshot.hasError) {
-            return Text("${snapshot.error}");
-          }
-
-          // By default, show a loading spinner.
-          return CircularProgressIndicator(
-            backgroundColor: Colors.lightGreen,
-          );
-        },
-      )),
+      body: FutureBuilder<List<Tracking>>(
+          future: fetchTracking(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              // return: show loading widget
+            }
+            if (snapshot.hasError) {
+              // return: show error widget
+            }
+            List<Tracking> tracking = snapshot.data ?? [];
+            return ListView.builder(
+                itemCount: tracking.length,
+                itemBuilder: (context, index) {
+                  Tracking track = tracking[index];
+                  return new Text(track.cidade);
+                });
+          }),
     );
   }
 
@@ -65,21 +62,29 @@ class Result extends StatelessWidget {
     }
   }
 
-  Future<Tracking> fetchTracking() async {
+  Future<List<Tracking>> fetchTracking() async {
     var response = await http.post(Uri.encodeFull("$url"),
         body: json.encode({
           "cnpj": "$cnpj".replaceAll(new RegExp(r'[^\w\s]+'), ''),
           "senha": "$senha",
           "nro_nf": "$nronf",
-          //"pedido": "$pedido}",
+          //"pedido": "$pedido",
         }),
         headers: {
           "content-type": "application/json",
         });
 
     if (response.statusCode == 200) {
+      var dados = jsonDecode(response.body);
+
       print(response.body);
-      return Tracking.fromJson(json.decode(response.body));
+      final trackingListJson = (dados["tracking"] as List);
+      final trackingListModel = List<Tracking>();
+
+      for (var item in trackingListJson)
+        trackingListModel.add(Tracking.fromJson(item));
+
+      return trackingListModel;
     } else {
       throw Exception('Failed to load tracking');
     }

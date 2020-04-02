@@ -1,12 +1,12 @@
 class Tracking {
 //  final String tracking;
-  final DateTime data_hora;
+  final String data_hora;
   final String dominio;
   final String filial;
   final String cidade;
   final String descricao;
   final String tipo;
-  final DateTime data_hora_efetiva;
+  final String data_hora_efetiva;
   final String nome_recebedor;
   final String nro_doc_recebedor;
 
@@ -25,7 +25,7 @@ class Tracking {
     this.nro_doc_recebedor,
   });
 
-  factory Tracking.fromJson(Map<String, dynamic> json) {
+ factory Tracking.fromJson(Map<String, dynamic> json) {
     return Tracking(
       data_hora: json['data_hora'],
       dominio: json['dominio'],
